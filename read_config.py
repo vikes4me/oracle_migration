@@ -1,6 +1,7 @@
 from ConfigParser import SafeConfigParser
 import sys
 
+
 def read_config():
     parser = SafeConfigParser()
     parser.read('/home/oracle/scripts/python/config.properties')
@@ -12,6 +13,7 @@ def read_config():
             dictionary[section][option] = parser.get(section, option)
 
     return dictionary
+
 
 if __name__ == '__main__':
     print("This module can not be run as a stand-alone.")

@@ -131,9 +131,7 @@ def begin_export():
     ORACLE_HOME = os.environ['ORACLE_HOME']
     dp_dir = get_dp_path()
     expdp_args = "parfile=" + dp_dir + "expdp_" + instance_name + ".par"
-    #sh.cd(ORACLE_HOME + "/bin")
-    # call(["cd", ORACLE_HOME + "/bin"])
-    # sh.expdp(username + "/" + password + "@" + service_name + " ", expdp_args)
+
     call(["expdp", username + "/" + password + "@" + service_name + " ", expdp_args])
 
 
@@ -152,8 +150,6 @@ def main():
     install_tsunami.install_dependencies()
     install_tsunami.install_tsunami()
     dp_dir = get_dp_path()
-
-    #sh.cd(dp_dir)
 
     p1 = Popen(["tsunamid " + dp_dir + "expdp_" + instance_name + "*"], shell=True)
     transfer_files_to_bridge.transfer_files()
