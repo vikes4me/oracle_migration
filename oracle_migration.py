@@ -9,7 +9,6 @@ from datetime import datetime
 from subprocess import call, Popen
 import cx_Oracle
 import multiprocessing
-import sh
 import sys
 import install_tsunami
 from read_config import read_config
