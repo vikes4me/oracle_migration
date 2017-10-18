@@ -167,11 +167,5 @@ if __name__ == '__main__':
     port = config_dict["dbInfo"]["port"]
     instance_name = get_instance_name()
 
-    rds_db_end_point = config_dict["dbInfo"]["rds_db_end_point"]
-    rds_db_service_name = config_dict["dbInfo"]["rds_db_service_name"]
-    rds_db_port = config_dict["dbInfo"]["rds_db_port"]
-    rds_master_user = config_dict["dbInfo"]["rds_master_user"]
-    rds_master_pwd = config_dict["dbInfo"]["rds_master_pwd"]
-
     main()
     sys.exit()
