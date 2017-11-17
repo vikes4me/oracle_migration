@@ -14,6 +14,7 @@ import install_tsunami
 from read_config import read_config
 import os
 import transfer_files_to_bridge
+import logging
 
 __author__ = "AWS RDS Support"
 __version__ = "1.0"
@@ -22,6 +23,9 @@ __requirements = "Must be executed as 'oracle' shell account and oracle user mus
 
 
 def exec_sql(sql):
+
+    logger = logging.getLogger(__name__)
+
     dsn = cx_Oracle.makedsn(hostip, port, service_name=service_name)
 
     try:
@@ -35,14 +39,15 @@ def exec_sql(sql):
         return cursor
     except cx_Oracle.DatabaseError as exc:
         error, = exc.args
-        print("Oracle-Error-Code:", error.code)
-        print("Oracle-Error-Message:", error.message)
+        logger.error(error.code)
+        logger.error(error.message)
         cursor.close()
         db.close()
         raise
 
 
 def dp_dir_exists():
+
     sql = """
            select count(1) 
            from dba_directories 
@@ -50,6 +55,7 @@ def dp_dir_exists():
         """
     result = exec_sql(sql)
     count = result.fetchone()[0]
+
     if count == 1:
         return True
     else:
@@ -57,27 +63,34 @@ def dp_dir_exists():
 
 
 def oracle_edition():
+
+    logger = logging.getLogger(__name__)
+
     sql = """
            select case instr(product, 'Enterprise') when 0 then 'N' else 'Y' end, version 
            from product_component_version 
            where product like 'Oracle%'"""
     result = exec_sql(sql)
     is_enterprise, db_version = result.fetchone()
-    print("is_enterprise = " + is_enterprise)
-    print("db_version = " + str(db_version))
+
+    logger.info("is_enterprise = %s", is_enterprise)
+    logger.info("db_version = %s", str(db_version))
+
     return is_enterprise
 
 
 def get_instance_name():
+
     sql = """
           select lower(sys_context('USERENV','DB_NAME')) as instance from dual"""
     result = exec_sql(sql)
     instance_name = result.fetchone()[0]
-    print("instance_name = " + instance_name)
+
     return instance_name
 
 
 def get_dp_path():
+
     sql = """
           select directory_path 
           from dba_directories 
@@ -88,6 +101,7 @@ def get_dp_path():
 
 
 def get_schemas():
+
     sql = """
           select username 
           from dba_users 
@@ -95,11 +109,13 @@ def get_schemas():
           and account_status='OPEN' order by username"""
     result = exec_sql(sql)
     schema_list = result.fetchall()
+
     return schema_list
 
 
 def create_par_file():
-    num_of_cores = multiprocessing.cpu_count()
+
+    logger = logging.getLogger(__name__)
     dp_dir = get_dp_path()
     get_instance_name()
     fh = open(dp_dir + "expdp_" + instance_name + ".par", 'w')
@@ -110,6 +126,7 @@ def create_par_file():
     fh.write("logfile=expdp_" + instance_name + ".log\n")
 
     is_enterprise = oracle_edition()
+
     if is_enterprise == 'Y':
         num_of_cores = multiprocessing.cpu_count()
         fh.write("parallel=" + str(num_of_cores / 2) + "\n")
@@ -118,6 +135,7 @@ def create_par_file():
     fh.write("schemas=")
     num_schemas = len(schema_list)
     i = 1
+
     for schema in schema_list:
         if i != num_schemas:
             fh.write(str(schema[0]) + ",")
@@ -127,7 +145,7 @@ def create_par_file():
 
 
 def begin_export():
-    ORACLE_HOME = os.environ['ORACLE_HOME']
+
     dp_dir = get_dp_path()
     expdp_args = "parfile=" + dp_dir + "expdp_" + instance_name + ".par"
 
@@ -135,8 +153,11 @@ def begin_export():
 
 
 def main():
-    start_time = datetime.now()
-    print("SCRIPT STARTING AT: " + str(start_time))
+
+    logging.basicConfig(filename='oracle_migration.log', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info('Started at %s', str(datetime.now()))
 
     passed = dp_dir_exists()
 
@@ -154,11 +175,23 @@ def main():
     transfer_files_to_bridge.transfer_files()
     p1.kill()
 
+    logger.info('Finished at ' + str(datetime.now()))
+
 
 if __name__ == '__main__':
+
+    logging.basicConfig(filename='oracle_migration.log', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info('Started at %s', str(datetime.now()))
+
     config_dict = read_config()
-    os.system(". ~/.profile")
-    os.system(". ~/.bash_profile")
+
+    try:
+        os.system(". ~/.profile")
+        os.system(". ~/.bash_profile")
+    except OSError as e:
+        logger.error(e)
 
     username = config_dict["dbInfo"]["username"]
     password = config_dict["dbInfo"]["password"]

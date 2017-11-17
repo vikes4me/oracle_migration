@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="awssupportdw@awssupport-rs-secondary-ro.db.amazon.com" uuid="bfafe69e-e4f9-423d-8831-a0c95b3dd7a9">
+      <database-info product="PostgreSQL" version="08.00.0002" jdbc-version="4.2" driver-name="RedshiftJDBC" driver-version="01.02.01.1001">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <secret-storage>master_key</secret-storage>
+      <user-name>johnyen</user-name>
+      <introspection-schemas>awssupportdw:public</introspection-schemas>
+    </data-source>
+  </component>
+</project>
