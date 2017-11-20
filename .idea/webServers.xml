@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="dcaaeb89-f159-422e-a6fe-67971088168a" name="On-Prem" url="http://ec2-52-88-198-207.us-west-2.compute.amazonaws.com">
+        <fileTransfer host="ec2-52-88-198-207.us-west-2.compute.amazonaws.com" port="22" privateKey="$USER_HOME$/Downloads/rds-uswest2.pem" rootFolder="/home/oracle" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

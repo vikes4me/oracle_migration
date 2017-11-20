@@ -14,7 +14,7 @@ import install_tsunami
 from read_config import read_config
 import os
 import transfer_files_to_bridge
-import logging
+from logger import log
 
 __author__ = "AWS RDS Support"
 __version__ = "1.0"
@@ -23,8 +23,6 @@ __requirements = "Must be executed as 'oracle' shell account and oracle user mus
 
 
 def exec_sql(sql):
-
-    logger = logging.getLogger(__name__)
 
     dsn = cx_Oracle.makedsn(hostip, port, service_name=service_name)
 
@@ -39,8 +37,8 @@ def exec_sql(sql):
         return cursor
     except cx_Oracle.DatabaseError as exc:
         error, = exc.args
-        logger.error(error.code)
-        logger.error(error.message)
+        log.error(error.code)
+        log.error(error.message)
         cursor.close()
         db.close()
         raise
@@ -64,8 +62,6 @@ def dp_dir_exists():
 
 def oracle_edition():
 
-    logger = logging.getLogger(__name__)
-
     sql = """
            select case instr(product, 'Enterprise') when 0 then 'N' else 'Y' end, version 
            from product_component_version 
@@ -73,8 +69,8 @@ def oracle_edition():
     result = exec_sql(sql)
     is_enterprise, db_version = result.fetchone()
 
-    logger.info("is_enterprise = %s", is_enterprise)
-    logger.info("db_version = %s", str(db_version))
+    log.info("is_enterprise = %s", is_enterprise)
+    log.info("db_version = %s", str(db_version))
 
     return is_enterprise
 
@@ -115,7 +111,6 @@ def get_schemas():
 
 def create_par_file():
 
-    logger = logging.getLogger(__name__)
     dp_dir = get_dp_path()
     get_instance_name()
     fh = open(dp_dir + "expdp_" + instance_name + ".par", 'w')
@@ -154,10 +149,7 @@ def begin_export():
 
 def main():
 
-    logging.basicConfig(filename='oracle_migration.log', level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    logger.info('Started at %s', str(datetime.now()))
+    log.info('Started at %s', str(datetime.now()))
 
     passed = dp_dir_exists()
 
@@ -180,10 +172,7 @@ def main():
 
 if __name__ == '__main__':
 
-    logging.basicConfig(filename='oracle_migration.log', level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
-    logger.info('Started at %s', str(datetime.now()))
+    log.info('Started at %s', str(datetime.now()))
 
     config_dict = read_config()
 
@@ -191,7 +180,7 @@ if __name__ == '__main__':
         os.system(". ~/.profile")
         os.system(". ~/.bash_profile")
     except OSError as e:
-        logger.error(e)
+        log.error(e)
 
     username = config_dict["dbInfo"]["username"]
     password = config_dict["dbInfo"]["password"]
