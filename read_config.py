@@ -16,5 +16,6 @@ def read_config():
 
 
 if __name__ == '__main__':
+
     print("This module can not be run as a stand-alone.")
     sys.exit()

@@ -1,6 +1,7 @@
 import sh
 import sys
-from logger import log
+from subprocess import call, Popen, CalledProcessError, PIPE, STDOUT
+import logger
 
 
 def install_dependencies():
@@ -21,14 +22,34 @@ def install_tsunami():
 
     try:
         sh.cd(directory[0])
-        sh.sudo("./recompile.sh")
     except OSError as e:
-        log.error(e.errno)
-        log.error(e.strerror)
+        logger.log.error(e.errno)
+        logger.log.error(e.strerror)
         raise
 
-    sh.sudo("make", "install")
+    try:
+        p = Popen(["sudo", "./recompile.sh"], stdout=PIPE, stderr=STDOUT)
 
+        stdout, stderr = p.communicate()
+        logger.log.info(stdout)
+        logger.log.info(stderr)
+    except CalledProcessError as e:
+        error, = e.args
+        logger.log.error(error.code)
+        logger.log.error(error.message)
+        raise
+
+    try:
+        p = Popen(["sudo", "make", "install"], stdout=PIPE, stderr=STDOUT)
+
+        stdout, stderr = p.communicate()
+        logger.log.info(stdout)
+        logger.log.info(stderr)
+    except CalledProcessError as e:
+        error, = e.args
+        logger.log.error(error.code)
+        logger.log.error(error.message)
+        raise
 
 if __name__ == '__main__':
 

@@ -9,9 +9,14 @@ from read_config import read_config
 import paramiko
 import sys
 import time
+import logger
+from subprocess import PIPE, Popen, STDOUT
 
 
 def transfer_files():
+
+    # logger.log.info("TRANSFER_FILES_TO_BRIDGE\n")
+
     config_dict = read_config()
 
     ec2_username = config_dict["ec2Info"]["username"]
@@ -38,18 +43,20 @@ def transfer_files():
 
         for command in commands:
             stdin, stdout, stderr = client.exec_command(command)
-            print stdout.read()
+            logger.log.info(command)
+            logger.log.info(stdout.read())
 
         stdin, stdout, stderr = client.exec_command(get_files)
-
-        # wait for tsunami to finish since exec_command is not a blocking call
+        logger.log.info(get_files)
+        # wait for tsunami to finish since exec_command is a non-blocking call
         while not stdout.channel.exit_status_ready() and not stdout.channel.recv_ready():
             time.sleep(1)
+            #logger.log.info(stdout.read())
 
     finally:
         client.close()
 
-
 if __name__ == '__main__':
+
     print("This module can not be run as a stand-alone.")
     sys.exit()
