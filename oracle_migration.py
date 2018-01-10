@@ -2,11 +2,13 @@
 
 """
 oracle_migration.py:
-This module is used to export all user schemas from db instance and transfer them over to ec2 instance
+This the main module used to export all user schemas from db instance and transfer them over to ec2 instance
+This script must be run as sudo:
+sudo -E python oracle_migration.py --config-file=/home/oracle/scripts/python/config.properties
 """
 
 from datetime import datetime
-from subprocess import call, Popen, CalledProcessError, PIPE, STDOUT
+from subprocess import Popen, CalledProcessError, PIPE, STDOUT
 import cx_Oracle
 import multiprocessing
 import sys
@@ -15,6 +17,7 @@ from read_config import read_config
 import transfer_files_to_bridge
 import logger
 from os import environ
+import argparse
 
 __author__ = "AWS RDS Support"
 __version__ = "1.0"
@@ -161,12 +164,7 @@ def begin_export():
         stdout, stderr = p.communicate()
         logger.log.info(stdout)
     except CalledProcessError as e:
-        '''error, = e.args
-        logger.log.error(error.code)
-        logger.log.error(error.message)
-        raise'''
         logger.log.error(str(e))
-
         raise
 
 
@@ -187,7 +185,7 @@ def main():
     dp_dir = get_dp_path()
 
     p1 = Popen(["tsunamid " + dp_dir + "expdp_" + instance_name + "*"], shell=True)
-    transfer_files_to_bridge.transfer_files()
+    transfer_files_to_bridge.transfer_files(config_file)
     p1.kill()
 
     logger.log.info('Finished at ' + str(datetime.now()))
@@ -195,7 +193,16 @@ def main():
 
 if __name__ == '__main__':
 
-    config_dict = read_config()
+    parser = argparse.ArgumentParser(description='Oracle Migration to RDS',
+                                     usage='sudo -E python oracle_migration.py '
+                                           '--config-file=[path to config.properties]')
+    parser.add_argument('-config-file', '--config-file', help='Full path to config file', action='store',
+                                dest='config', required=True)
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s (version 1.0)')
+    args = parser.parse_args()
+    config_file = args.config
+
+    config_dict = read_config(config_file)
 
     try:
         ORACLE_HOME = environ["ORACLE_HOME"]

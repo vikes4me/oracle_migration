@@ -4,20 +4,19 @@
 transfer_files_to_bridge.py:
 This module is used to transfer dump files from on-prem to ec2 bridge which sits in the same vpc as RDS instance
 """
-
+from __future__ import print_function
 from read_config import read_config
 import paramiko
 import sys
 import time
 import logger
-from subprocess import PIPE, Popen, STDOUT
 
 
-def transfer_files():
+def transfer_files(config_file):
 
     # logger.log.info("TRANSFER_FILES_TO_BRIDGE\n")
 
-    config_dict = read_config()
+    config_dict = read_config(config_file)
 
     ec2_username = config_dict["ec2Info"]["username"]
     ec2_hostname = config_dict["ec2Info"]["hostname"]
@@ -27,11 +26,16 @@ def transfer_files():
 
     priv_key_name = ec2_priv_key_loc + ec2_priv_key_name
     priv_key = paramiko.RSAKey.from_private_key_file(priv_key_name)
-
+    '''
     commands = ["sudo yum -y install wget.x86_64", "sudo yum -y install make", "sudo yum -y install automake",
                 "sudo yum -y install gcc", "sudo yum -y install autoconf", "sudo yum -y install cvs",
                 "wget http://sourceforge.net/projects/tsunami-udp/files/latest/download?test=goal -O tsunami.tar.gz",
                 "tar -xzvf tsunami.tar.gz", "cd tsunami-udp-v*", "sudo ./recompile.sh", "sudo make install"]
+    '''
+    commands = ["yum -y install wget.x86_64", "yum -y install make", "yum -y install automake",
+                "yum -y install gcc", "yum -y install autoconf", "yum -y install cvs",
+                "wget http://sourceforge.net/projects/tsunami-udp/files/latest/download?test=goal -O tsunami.tar.gz",
+                "tar -xzvf tsunami.tar.gz", "cd tsunami-udp-v*", "./recompile.sh", "make install"]
 
     get_files = "tsunami connect " + ec2_source_hostname + " get \*"
 

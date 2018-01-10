@@ -1,10 +1,11 @@
+from __future__ import print_function
 from ConfigParser import SafeConfigParser
 import sys
 
 
-def read_config():
+def read_config(config_file):
     parser = SafeConfigParser()
-    parser.read('/home/oracle/scripts/python/config.properties')
+    parser.read(config_file)
 
     dictionary = {}
     for section in parser.sections():
